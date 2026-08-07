@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PayFlow HR - Payroll &amp; Leave Management</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-logo auth-logo"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div class="brand-text">
+          <span class="brand-name">PayFlow</span>
+          <span class="brand-sub">Portal</span>
+        </div>
+      </div>
+      <div class="auth-tabs">
+        <button id="loginTab" class="auth-tab active" type="button">Sign In</button>
+        <button id="registerTab" class="auth-tab" type="button">Register</button>
+      </div>
+      <div class="auth-body">
+        <div id="authAlert" class="auth-alert"></div>
+
+        <form id="loginForm" class="auth-form">
+          <h2>Sign in to your account</h2>
+          <p>Use your email or employee ID to login.</p>
+          <input type="text" id="loginIdentifier" class="input" placeholder="Email or Employee ID" required />
+          <input type="password" id="loginPassword" class="input" placeholder="Password" required />
+          <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          <p class="auth-switch">Don't have an account? <button type="button" class="link-btn" id="showRegisterBtn">Register</button></p>
+        </form>
+
+        <form id="registerForm" class="auth-form" style="display:none;">
+          <h2>Create a new account</h2>
+          <p>Register as Admin or Employee.</p>
+          <div class="form-row auth-row">
+            <input type="text" id="registerFirst" class="input" placeholder="First name" required />
+            <input type="text" id="registerLast" class="input" placeholder="Last name" required />
+          </div>
+          <input type="email" id="registerEmail" class="input" placeholder="Email address" required />
+          <input type="password" id="registerPassword" class="input" placeholder="Password" required />
+          <input type="password" id="registerConfirm" class="input" placeholder="Confirm password" required />
+          <select id="registerRole" class="select">
+            <option value="Employee">Employee</option>
+            <option value="Admin">Admin</option>
+          </select>
+          <button type="submit" class="btn btn-primary btn-block">Register</button>
+          <p class="auth-switch">Already have an account? <button type="button" class="link-btn" id="showLoginBtn">Sign in</button></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" style="display:none;">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div class="brand-text">
+          <span class="brand-name">PayFlow</span>
+          <span class="brand-sub">HR Suite</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-label">Main Menu</p>
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="employees" data-permission="admin">
+          <i class="fa-solid fa-users"></i><span>Employees</span>
+          <span class="nav-badge" id="badgeEmployees">0</span>
+        </a>
+        <a href="#" class="nav-item" data-page="payroll" data-permission="admin">
+          <i class="fa-solid fa-wallet"></i><span>Payroll</span>
+        </a>
+        <a href="#" class="nav-item" data-page="leaves">
+          <i class="fa-solid fa-calendar-check"></i><span>Leave Management</span>
+          <span class="nav-badge warning" id="badgePending">0</span>
+        </a>
+
+        <p class="nav-label nav-label-mt">Insights</p>
+        <a href="#" class="nav-item" data-page="reports" data-permission="admin">
+          <i class="fa-solid fa-chart-column"></i><span>Reports</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="profile-mini">
+          <div class="avatar avatar-sm">AD</div>
+          <div>
+            <p class="profile-name">Admin User</p>
+            <p class="profile-role">System Administrator</p>
+          </div>
+          <i class="fa-solid fa-ellipsis"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+          <div>
+            <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            <p class="page-subtitle" id="pageSubtitle">Overview of your organization</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="globalSearch" placeholder="Search employees..." />
+          </div>
+          <button class="icon-btn" title="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notif-dot" id="notifDot" style="display:none;"></span>
+          </button>
+          <button class="btn btn-primary" id="topAddBtn"><i class="fa-solid fa-plus"></i> Add Employee</button>
+          <button class="btn btn-ghost" id="logoutBtn" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <!-- ===================== DASHBOARD ===================== -->
+        <div class="page active" id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+              <div>
+                <p class="stat-label">Total Employees</p>
+                <h2 class="stat-value" id="statEmployees">0</h2>
+                <p class="stat-delta up"><i class="fa-solid fa-arrow-trend-up"></i> Active workforce</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fa-solid fa-money-bill-wave"></i></div>
+              <div>
+                <p class="stat-label">Monthly Payroll</p>
+                <h2 class="stat-value" id="statPayroll">$0</h2>
+                <p class="stat-delta up"><i class="fa-solid fa-arrow-trend-up"></i> This month</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fa-solid fa-calendar-check"></i></div>
+              <div>
+                <p class="stat-label">Pending Leaves</p>
+                <h2 class="stat-value" id="statPending">0</h2>
+                <p class="stat-delta warn"><i class="fa-solid fa-triangle-exclamation"></i> Needs review</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fa-solid fa-business-time"></i></div>
+              <div>
+                <p class="stat-label">Avg Attendance</p>
+                <h2 class="stat-value" id="statAttendance">0%</h2>
+                <p class="stat-delta up"><i class="fa-solid fa-arrow-trend-up"></i> Last 30 days</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Payroll Overview</h3>
+                  <p class="card-sub">Distribution of payroll cost</p>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="payrollChart"></canvas>
+              </div>
+              <div class="chart-legend" id="payrollLegend"></div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Leave Requests</h3>
+                  <p class="card-sub">Latest activity</p>
+                </div>
+                <a href="#" class="link-btn" data-goto="leaves">View all</a>
+              </div>
+              <div class="activity-list" id="recentLeaves"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Employee Directory</h3>
+                <p class="card-sub">Quick overview</p>
+              </div>
+              <a href="#" class="link-btn" data-goto="employees">View all</a>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Salary</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dirBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== EMPLOYEES ===================== -->
+        <div class="page" id="page-employees">
+          <div class="card">
+            <div class="card-header between">
+              <div>
+                <h3 class="card-title">All Employees</h3>
+                <p class="card-sub">Manage your workforce</p>
+              </div>
+              <div class="card-actions">
+                <select id="deptFilter" class="select">
+                  <option value="">All Departments</option>
+                </select>
+                <button class="btn btn-primary" id="addEmployeeBtn"><i class="fa-solid fa-user-plus"></i> Add Employee</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Contact</th>
+                    <th>Basic Salary</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="employeeBody"></tbody>
+              </table>
+              <div class="empty-state" id="employeeEmpty" style="display:none;">
+                <i class="fa-regular fa-folder-open"></i>
+                <p>No employees found</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== PAYROLL ===================== -->
+        <div class="page" id="page-payroll">
+          <div class="card">
+            <div class="card-header between">
+              <div>
+                <h3 class="card-title">Payroll Processing</h3>
+                <p class="card-sub">Generate payslips for a selected month</p>
+              </div>
+              <div class="card-actions">
+                <input type="month" id="payrollMonth" class="select" />
+                <button class="btn btn-primary" id="runPayrollBtn"><i class="fa-solid fa-gears"></i> Run Payroll</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Basic</th>
+                    <th>Allowances</th>
+                    <th>Deductions</th>
+                    <th>Net Pay</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="payrollBody"></tbody>
+              </table>
+              <div class="empty-state" id="payrollEmpty">
+                <i class="fa-regular fa-file-lines"></i>
+                <p>No payroll data yet</p>
+                <p class="empty-hint">Select a month and click "Run Payroll"</p>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Payslip History</h3>
+                <p class="card-sub">Previously generated payslips</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Month</th>
+                    <th>Net Pay</th>
+                    <th>Generated</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="payslipHistory"></tbody>
+              </table>
+              <div class="empty-state" id="historyEmpty" style="display:none;">
+                <i class="fa-regular fa-clock"></i>
+                <p>No payslips generated yet</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== LEAVE MANAGEMENT ===================== -->
+        <div class="page" id="page-leaves">
+          <div class="stats-grid small">
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fa-solid fa-plane"></i></div>
+              <div><p class="stat-label">Approved</p><h2 class="stat-value" id="leaveApproved">0</h2></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fa-solid fa-hourglass-half"></i></div>
+              <div><p class="stat-label">Pending</p><h2 class="stat-value" id="leavePending">0</h2></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="fa-solid fa-xmark"></i></div>
+              <div><p class="stat-label">Rejected</p><h2 class="stat-value" id="leaveRejected">0</h2></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fa-solid fa-calendar-days"></i></div>
+              <div><p class="stat-label">Total Days Taken</p><h2 class="stat-value" id="leaveDays">0</h2></div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header between">
+                <div>
+                  <h3 class="card-title">Leave Requests</h3>
+                  <p class="card-sub">Approve or reject requests</p>
+                </div>
+                <select id="leaveFilter" class="select">
+                  <option value="">All Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Type</th>
+                      <th>From</th>
+                      <th>To</th>
+                      <th>Days</th>
+                      <th>Reason</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaveBody"></tbody>
+                </table>
+                <div class="empty-state" id="leaveEmpty" style="display:none;">
+                  <i class="fa-regular fa-calendar-xmark"></i>
+                  <p>No leave requests found</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Apply for Leave</h3>
+                  <p class="card-sub">New leave request</p>
+                </div>
+              </div>
+              <form id="leaveForm" class="form">
+                <div class="form-group">
+                  <label>Employee</label>
+                  <select id="leaveEmployee" class="select" required></select>
+                </div>
+                <div class="form-group">
+                  <label>Leave Type</label>
+                  <select id="leaveType" class="select" required>
+                    <option value="">Select type</option>
+                    <option value="Annual Leave">Annual Leave</option>
+                    <option value="Sick Leave">Sick Leave</option>
+                    <option value="Personal Leave">Personal Leave</option>
+                    <option value="Maternity Leave">Maternity Leave</option>
+                    <option value="Paternity Leave">Paternity Leave</option>
+                    <option value="Unpaid Leave">Unpaid Leave</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>From Date</label>
+                    <input type="date" id="leaveFrom" class="input" required />
+                  </div>
+                  <div class="form-group">
+                    <label>To Date</label>
+                    <input type="date" id="leaveTo" class="input" required />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Reason</label>
+                  <textarea id="leaveReason" class="input" rows="3" placeholder="Reason for leave"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-paper-plane"></i> Submit Request</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== REPORTS ===================== -->
+        <div class="page" id="page-reports">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Department Payroll</h3>
+                  <p class="card-sub">Cost per department</p>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="deptChart"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Leave Distribution</h3>
+                  <p class="card-sub">By leave type</p>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="leaveChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header between">
+              <div>
+                <h3 class="card-title">Payroll Summary</h3>
+                <p class="card-sub">Aggregated figures</p>
+              </div>
+              <button class="btn btn-primary" id="exportBtn"><i class="fa-solid fa-download"></i> Export CSV</button>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Department</th>
+                    <th>Employees</th>
+                    <th>Total Basic</th>
+                    <th>Total Allowances</th>
+                    <th>Total Deductions</th>
+                    <th>Net Payroll</th>
+                  </tr>
+                </thead>
+                <tbody id="summaryBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== MODALS ===================== -->
+  <div class="modal-overlay" id="employeeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Employee</h3>
+        <button class="icon-btn modal-close" data-close="employeeModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="employeeForm" class="form">
+        <input type="hidden" id="empId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="empFirst" class="input" required />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="empLast" class="input" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="empEmail" class="input" required />
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="empPhone" class="input" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Department</label>
+            <select id="empDept" class="select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Position</label>
+            <input type="text" id="empPosition" class="input" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Basic Salary ($)</label>
+            <input type="number" id="empSalary" class="input" min="0" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label>Allowance ($)</label>
+            <input type="number" id="empAllowance" class="input" min="0" step="0.01" value="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hire Date</label>
+            <input type="date" id="empHireDate" class="input" required />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="empStatus" class="select">
+              <option value="Active">Active</option>
+              <option value="On Leave">On Leave</option>
+              <option value="Terminated">Terminated</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="employeeModal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="payModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>Payslip</h3>
+        <button class="icon-btn modal-close" data-close="payModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="payslip" id="payslipBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-close="payModal">Close</button>
+        <button class="btn btn-primary" id="printPayslip"><i class="fa-solid fa-print"></i> Print</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

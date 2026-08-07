@@ -1,0 +1,12 @@
+{
+  "name": "employee-payroll-and-leave-management-system",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Static Employee Payroll and Leave Management System with a local development server.",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo \"No build step required for static site.\"",
+    "preview": "node server.js"
+  }
+}
